@@ -310,6 +310,8 @@ test-shellcheck:
 # invocation.
 .PHONY: check-go-version-%
 check-go-version-%:
+	echo "JSAF sleeping"
+	sleep 99999
 	./release-tools/verify-go-version.sh "$*"
 
 # Test for spelling errors.
