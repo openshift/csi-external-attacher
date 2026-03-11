@@ -26,8 +26,8 @@ import (
 	"google.golang.org/grpc/codes"
 
 	"github.com/kubernetes-csi/csi-lib-utils/connection"
-	"github.com/kubernetes-csi/external-attacher/pkg/attacher"
-	"github.com/kubernetes-csi/external-attacher/pkg/features"
+	"github.com/kubernetes-csi/external-attacher/v4/pkg/attacher"
+	"github.com/kubernetes-csi/external-attacher/v4/pkg/features"
 	"google.golang.org/grpc/status"
 	v1 "k8s.io/api/core/v1"
 	storage "k8s.io/api/storage/v1"
@@ -209,14 +209,6 @@ func node() *v1.Node {
 			Name: testNodeName,
 		},
 	}
-}
-
-func nodeWithAnnotations() *v1.Node {
-	node := node()
-	node.Annotations = map[string]string{
-		"csi.volume.kubernetes.io/nodeid": fmt.Sprintf("{ %q: %q }", testAttacherName, testNodeID),
-	}
-	return node
 }
 
 func csiNode() *storage.CSINode {
@@ -885,17 +877,6 @@ func TestCSIHandler(t *testing.T) {
 				core.NewPatchSubresourceAction(vaGroupResourceVersion, metav1.NamespaceNone, testPVName+"-"+testNodeName,
 					types.MergePatchType, patch(va(false /*attached*/, fin, ann),
 						vaWithAttachError(va(false, fin, ann), "csinode.storage.k8s.io \"node1\" not found")), "status"),
-			},
-		},
-		{
-			name:           "Node with annotations, CSINode is absent -> error",
-			initialObjects: []runtime.Object{pvWithFinalizer(), nodeWithAnnotations()},
-			addedVA:        va(false, fin, ann),
-			expectedActions: []core.Action{
-				core.NewPatchSubresourceAction(vaGroupResourceVersion, metav1.NamespaceNone, testPVName+"-"+testNodeName,
-					types.MergePatchType, patch(va(false /*attached*/, fin, ann),
-						vaWithAttachError(va(false, fin, ann), "csinode.storage.k8s.io \"node1\" not found")),
-					"status"),
 			},
 		},
 		{
